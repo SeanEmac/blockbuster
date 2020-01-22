@@ -16,7 +16,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { mainListItems, secondaryListItems } from '../listItems';
 import Chart from '../Chart/Chart';
-import Deposits from '../Deposits/Deposits';
+import TransactionSummary from '../TransactionSummary/TransactionSummary';
 import Input from '../Input/Input';
 import Orders from '../Orders/Orders';
 
@@ -109,7 +109,7 @@ const useStyles = makeStyles(theme => ({
 export default function Dashboard() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
-  const [transID, setTransID] = React.useState('');
+  const [transactionID, setTransactionID] = React.useState('');
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -121,7 +121,7 @@ export default function Dashboard() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setTransID(event.target.transactionID.value);
+    setTransactionID(event.target.transactionID.value);
   }
 
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
@@ -196,7 +196,7 @@ export default function Dashboard() {
             {/* <Grid item xs={12} md={4} lg={3}> */}
             <Grid item xs={12} md={8} lg={12}>
               <Paper className={fixedHeightPaper}>
-                <Deposits transID={transID} />
+                <TransactionSummary transactionID={transactionID} />
               </Paper>
             </Grid>
 
