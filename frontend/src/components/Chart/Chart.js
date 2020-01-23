@@ -1,52 +1,83 @@
-import React from 'react';
-import { useTheme } from '@material-ui/core/styles';
-import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
-import Title from '../Title/Title';
+import React, { useEffect, createRef }from 'react';
+import { DataSet, Network } from 'vis';
 
-function createData(time, amount) {
-  return { time, amount };
+
+const options = {
+  physics: {
+    barnesHut: {
+      springConstant: 0,
+      avoidOverlap: 20
+    }
+  },
+  edges:{
+    arrows: {
+      to: {
+        enabled: true,
+      }
+    }
+  }
 }
 
-const data = [
-  createData('00:00', 0),
-  createData('03:00', 300),
-  createData('06:00', 600),
-  createData('09:00', 800),
-  createData('12:00', 1500),
-  createData('15:00', 2000),
-  createData('18:00', 2400),
-  createData('21:00', 2400),
-  createData('24:00', 2600),
-];
+const Chart = (props)  => {
+  const appRef = createRef();
+  let nodes = []
+  let edges = []
 
-export default function Chart() {
-  const theme = useTheme();
+  let trans = props.data.hash;
+  let inputs = props.data.inputs.map(input => input.prev_out.addr)
+  let outputs = props.data.out.map(output => output.addr)
+
+  nodes.push({
+    id: trans,
+    label: 'Transaction',//trans,
+    shape: "circle",
+    color: "#97C2FC"
+  })
+
+  inputs.forEach(input => {
+    nodes.push({
+      id: input,
+      label: 'Input',//input,
+      shape: "circle",
+      color: "#FB7E81"
+    })
+  })
+
+  outputs.forEach(output => {
+    nodes.push({
+      id: output,
+      label: 'Output', //output,
+      shape: "circle",
+      color: "#7BE141"
+    })
+  })
+
+  inputs.forEach(input => {
+    edges.push({
+      from: input,
+      to: trans
+    })
+  })
+
+  outputs.forEach(output => {
+    edges.push({
+      from: trans,
+      to: output
+    })
+  })
+
+  const data = {
+    nodes:  new DataSet(nodes),
+    edges: new DataSet(edges)
+  }
+
+  useEffect(() => {
+    new Network(appRef.current, data, options);
+  }, [props]);
 
   return (
-    <React.Fragment>
-      <Title>Some Chart</Title>
-      <ResponsiveContainer>
-
-        <LineChart
-          data={data}
-          margin={{
-            top: 16,
-            right: 16,
-            bottom: 0,
-            left: 34,
-          }}
-        >
-
-          <XAxis dataKey="time" stroke={theme.palette.text.secondary} />
-          <YAxis stroke={theme.palette.text.secondary}>
-            <Label angle={270} position="left" style={{ textAnchor: 'middle', fill: theme.palette.text.primary }}>
-              Sales ($)
-            </Label>
-          </YAxis>
-          <Line type="monotone" dataKey="amount" stroke={theme.palette.primary.main} dot={false} />
-        </LineChart>
-
-      </ResponsiveContainer>
-    </React.Fragment>
+    <div ref={appRef} />
   );
 }
+
+export default Chart;

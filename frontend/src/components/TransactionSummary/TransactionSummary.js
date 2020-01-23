@@ -13,28 +13,37 @@ import TableRow from '@material-ui/core/TableRow';
 
 const useStyles = makeStyles(theme => ({
   table: {
-    maxWidth: 350,
+    maxWidth: 450,
+  },
+  cell : {
+    borderTopWidth: 0,
+    borderRightWidth: 0,
+    borderLeftWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(224, 224, 224, 1)',
   },
 }));
 
 const TransactionSummary = (props)  => {
   const classes = useStyles()
-  const [hasError, setErrors] = useState(false);
   const [transactionObj, setTransactionObj] = useState({ data: null });
   const [inputOpen, setInputOpen] = React.useState(false);
   const [outputOpen, setOutputOpen] = React.useState(false);
   
   useEffect(() => {
     fetchData(props.transactionID);
-  }, [props]);
+  }, [props.transactionID]);
 
   async function fetchData(trans) {
     if (trans !== "") {
+      // https://blockchain.info/rawtx/b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da
       const res = await fetch('https://blockchain.info/rawtx/' + trans + '?&cors=true')
       res
         .json()
-        .then(res => setTransactionObj({ data: res }))
-        .catch(err => setErrors(err));
+        .then(res => {
+          setTransactionObj({ data: res })
+          props.passData(res)
+        })
     }
   }
 
@@ -45,7 +54,7 @@ const TransactionSummary = (props)  => {
   const handleOutputClick = () => {
     setOutputOpen(!outputOpen);
   };
-
+  // prev_out.spent
   const toBTC = (satoshi) => {
     return satoshi / 100000000 + " BTC" 
   }
@@ -60,20 +69,16 @@ const TransactionSummary = (props)  => {
               <TableRow>
                 <TableCell>Time</TableCell>
                 <TableCell>{new Date(transactionObj.data.time * 1000).toLocaleString()}</TableCell>
+                <TableCell className={classes.cell}>Fees</TableCell>
+                <TableCell>{toBTC((transactionObj.data.inputs.reduce((a, b) => a + b.prev_out.value, 0) - 
+                            transactionObj.data.out.reduce((a, b) => a + b.value, 0)))}
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Total in</TableCell>
                 <TableCell>{toBTC(transactionObj.data.inputs.reduce((a, b) => a + b.prev_out.value, 0))}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Total out</TableCell>
+                <TableCell className={classes.cell}>Total out</TableCell>
                 <TableCell>{toBTC(transactionObj.data.out.reduce((a, b) => a + b.value, 0))}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Fees</TableCell>
-                <TableCell>{toBTC((transactionObj.data.inputs.reduce((a, b) => a + b.prev_out.value, 0) - 
-                            transactionObj.data.out.reduce((a, b) => a + b.value, 0)))}
-                </TableCell>
               </TableRow>
           </TableBody>
         </Table>
@@ -87,8 +92,9 @@ const TransactionSummary = (props)  => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Hash</TableCell>
+              <TableCell>Address</TableCell>
               <TableCell>Bitcoin Amount</TableCell>
+              <TableCell>Spent?</TableCell>
             </TableRow>
           </TableHead>
 
@@ -97,6 +103,7 @@ const TransactionSummary = (props)  => {
               <TableRow key={input.prev_out.addr}>
                 <TableCell>{input.prev_out.addr}</TableCell>
                 <TableCell>{toBTC(input.prev_out.value)}</TableCell>
+                <TableCell>{input.prev_out.spent? 'Yes': 'No'}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -112,8 +119,9 @@ const TransactionSummary = (props)  => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Hash</TableCell>
+              <TableCell>Address</TableCell>
               <TableCell>Bitcoin Amount</TableCell>
+              <TableCell>Spent?</TableCell>
             </TableRow>
           </TableHead>
 
@@ -122,6 +130,7 @@ const TransactionSummary = (props)  => {
               <TableRow key={output.addr}>
                 <TableCell>{output.addr}</TableCell>
                 <TableCell>{toBTC(output.value)}</TableCell>
+                <TableCell>{output.spent? 'Yes': 'No'}</TableCell>
               </TableRow>
             ))}
           </TableBody>
