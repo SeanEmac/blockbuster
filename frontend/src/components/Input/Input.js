@@ -7,7 +7,7 @@ const Input = (props)  => {
     <React.Fragment>
      <Title>Search for a transaction:</Title>
      
-     <form onSubmit={e => props.handleSubmit(e)}>
+     <form onSubmit={e => props.getTransactionID(e, e.target.transactionID.value)}>
         <TextField
           id = "filled-full-width"
           label = "Transaction ID"

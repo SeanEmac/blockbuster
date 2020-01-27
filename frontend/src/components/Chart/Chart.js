@@ -19,13 +19,14 @@ const options = {
 }
 
 const Chart = (props)  => {
+  let transaction = props.transaction
   const appRef = createRef();
   let nodes = []
   let edges = []
 
-  let trans = props.data.hash;
-  let inputs = props.data.inputs.map(input => input.prev_out.addr)
-  let outputs = props.data.out.map(output => output.addr)
+  let trans = transaction.id;
+  let inputs = transaction.inputs.map(input => input.input_key)
+  let outputs = transaction.outputs.map(output => output.output_key)
 
   nodes.push({
     id: trans,

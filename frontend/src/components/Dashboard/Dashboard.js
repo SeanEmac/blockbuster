@@ -18,6 +18,7 @@ import { mainListItems, secondaryListItems } from '../listItems';
 import Chart from '../Chart/Chart';
 import TransactionSummary from '../TransactionSummary/TransactionSummary';
 import Input from '../Input/Input';
+import Examples from '../Examples/Examples';
 
 const drawerWidth = 240;
 
@@ -104,18 +105,10 @@ const useStyles = makeStyles(theme => ({
     height: 160,
   },
   bigHeight: {
-    height: 380,
-    padding: theme.spacing(2),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
+    height: 280,
   },
   graph: {
-    height: 600,
-    padding: theme.spacing(2),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
+    height: 500,
   },
 
 }));
@@ -124,9 +117,9 @@ export default function Dashboard() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const [transactionID, setTransactionID] = React.useState('');
-  const [data, setData] = React.useState('');
+  const [transactionData, setTransactionData] = React.useState('');
   const [loaded, setLoaded] = React.useState(false);
-  const [loaded2, setLoaded2] = React.useState(false);
+  const [graphLoaded, setGraphLoaded] = React.useState(false);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -136,18 +129,20 @@ export default function Dashboard() {
     setOpen(false);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setTransactionID(event.target.transactionID.value);
+  const getTransactionID = (e, transID) => {
+    e.preventDefault();
+    setTransactionID(transID);
     setLoaded(true);
   }
 
-  const passData = (data) => {
-    setData(data);
-    setLoaded2(true);
+  const propegateGraphData = (data) => {
+    setTransactionData(data);
+    setGraphLoaded(true);
   }
 
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  const bigHeightPaper = clsx(classes.paper, classes.bigHeight);
+  const graph = clsx(classes.paper, classes.graph);
 
   return (
     <div className={classes.root}>
@@ -194,38 +189,35 @@ export default function Dashboard() {
         <Container maxWidth="lg" className={classes.container}>
           <Grid container spacing={3}>
 
-            {/* Input section 
-              Addresses can be spent or not
-            */}
+            {/* Input */}
             <Grid item xs={12} md={4} lg={7}>
               <Paper className={fixedHeightPaper}>
-                <Input handleSubmit={handleSubmit} />
+                <Input getTransactionID={getTransactionID} />
               </Paper>
             </Grid>
 
-            {/* Extra section */}
-            { loaded && 
+            {/* Examples */}
             <Grid item xs={12} md={4} lg={5}>
               <Paper className={fixedHeightPaper}>
-                <Input handleSubmit={handleSubmit} />
+                <Examples getTransactionID={getTransactionID}/>
               </Paper>
-            </Grid>}
+            </Grid>
 
-            {/* Info section */}
-            { loaded && 
-            <Grid item xs={12} md={8} lg={12}>
-              <Paper className={classes.bigHeight}>
-                <TransactionSummary transactionID={transactionID} passData={passData} />
-              </Paper>
-            </Grid>}
+            { loaded && // Info
+              <Grid item xs={12} md={8} lg={12}>
+                <Paper className={bigHeightPaper}>
+                  <TransactionSummary transactionID={transactionID} propegateGraphData={propegateGraphData} />
+                </Paper>
+              </Grid>
+            }
 
-            {/* Chart section */}
-            { loaded2 && 
-            <Grid item xs={12} md={8} lg={12}>
-              <Paper className={classes.graph}>
-                <Chart data={data}/>
-              </Paper>
-            </Grid>}
+            { graphLoaded && // Chart
+              <Grid item xs={12} md={8} lg={12}>
+                <Paper className={graph}>
+                  <Chart transaction={transactionData.transaction}/>
+                </Paper>
+              </Grid>
+            }
 
           </Grid>
         </Container>

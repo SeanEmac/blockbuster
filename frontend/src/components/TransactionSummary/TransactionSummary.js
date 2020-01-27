@@ -13,7 +13,7 @@ import TableRow from '@material-ui/core/TableRow';
 
 const useStyles = makeStyles(theme => ({
   table: {
-    maxWidth: 450,
+    maxWidth: 650,
   },
   cell : {
     borderTopWidth: 0,
@@ -24,9 +24,44 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const createInputOutputTable = (onClick, open, title, inputs, key) => {
+  return <div>
+    <ListItem button onClick={onClick}>
+      <Title>{title}</Title>
+      {open ? <ExpandLess /> : <ExpandMore />}
+    </ListItem>
+
+    <Collapse in={open} timeout="auto" unmountOnExit>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Address</TableCell>
+            <TableCell>Bitcoin Amount</TableCell>
+            <TableCell>Spent?</TableCell>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {inputs.map(input => (
+            <TableRow key={input[key]}>
+              <TableCell>{input[key]}</TableCell>
+              <TableCell>{toBTC(input.satoshis)}</TableCell>
+              <TableCell>Spent</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Collapse>
+  </div>
+}
+
+const toBTC = (satoshi) => {
+  return satoshi / 100000000 + " BTC" 
+}
+
 const TransactionSummary = (props)  => {
   const classes = useStyles()
-  const [transactionObj, setTransactionObj] = useState({ data: null });
+  const [transaction, setTransaction] = useState();
   const [inputOpen, setInputOpen] = React.useState(false);
   const [outputOpen, setOutputOpen] = React.useState(false);
   
@@ -37,12 +72,15 @@ const TransactionSummary = (props)  => {
   async function fetchData(trans) {
     if (trans !== "") {
       // https://blockchain.info/rawtx/b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da
-      const res = await fetch('https://blockchain.info/rawtx/' + trans + '?&cors=true')
+      // const res = await fetch('https://blockchain.info/rawtx/' + trans + '?&cors=true')
+      const res = await fetch('http://127.0.0.1:5000/blockbuster/api/transaction/' + trans)
       res
         .json()
         .then(res => {
-          setTransactionObj({ data: res })
-          props.passData(res)
+          // Set the json response
+          setTransaction(res.transaction)
+          // Send the data to the Chart component
+          props.propegateGraphData(res)
         })
     }
   }
@@ -54,89 +92,47 @@ const TransactionSummary = (props)  => {
   const handleOutputClick = () => {
     setOutputOpen(!outputOpen);
   };
-  // prev_out.spent
-  const toBTC = (satoshi) => {
-    return satoshi / 100000000 + " BTC" 
-  }
 
   return (
     <React.Fragment>
       <Title > Transaction details: </Title>
+
       {/* This will only render when we have gotten a response */}
-      { transactionObj && transactionObj.data && <div>
-        <Table className={classes.table} size="small">
-          <TableBody>
-              <TableRow>
-                <TableCell>Time</TableCell>
-                <TableCell>{new Date(transactionObj.data.time * 1000).toLocaleString()}</TableCell>
-                <TableCell className={classes.cell}>Fees</TableCell>
-                <TableCell>{toBTC((transactionObj.data.inputs.reduce((a, b) => a + b.prev_out.value, 0) - 
-                            transactionObj.data.out.reduce((a, b) => a + b.value, 0)))}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Total in</TableCell>
-                <TableCell>{toBTC(transactionObj.data.inputs.reduce((a, b) => a + b.prev_out.value, 0))}</TableCell>
-                <TableCell className={classes.cell}>Total out</TableCell>
-                <TableCell>{toBTC(transactionObj.data.out.reduce((a, b) => a + b.value, 0))}</TableCell>
-              </TableRow>
-          </TableBody>
-        </Table>
-      
-      <ListItem button onClick={handleInputClick}>
-        <Title > Inputs </Title>
-        {inputOpen ? <ExpandLess /> : <ExpandMore />}
-      </ListItem>
+      { transaction && transaction.id && 
+        <React.Fragment>
+          <Table className={classes.table} size="small">
+            <TableBody>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell colSpan={5}>{transaction.id}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Time</TableCell>
+                  <TableCell>{new Date(transaction.timestamp).toLocaleString()}</TableCell>
 
-      <Collapse in={inputOpen} timeout="auto" unmountOnExit>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Address</TableCell>
-              <TableCell>Bitcoin Amount</TableCell>
-              <TableCell>Spent?</TableCell>
-            </TableRow>
-          </TableHead>
+                  <TableCell className={classes.cell}>Total in</TableCell>
+                  <TableCell>{toBTC(transaction.totalIn)}</TableCell>
 
-          <TableBody>
-            {transactionObj.data.inputs.map(input => (
-              <TableRow key={input.prev_out.addr}>
-                <TableCell>{input.prev_out.addr}</TableCell>
-                <TableCell>{toBTC(input.prev_out.value)}</TableCell>
-                <TableCell>{input.prev_out.spent? 'Yes': 'No'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Collapse>
+                  <TableCell className={classes.cell}>In Degree</TableCell>
+                  <TableCell>{transaction.inputs.length}</TableCell>
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell>Fees</TableCell>
+                  <TableCell>{toBTC(transaction.fees)}</TableCell>
 
-      <ListItem button onClick={handleOutputClick}>
-        <Title > Outputs </Title>
-        {outputOpen ? <ExpandLess /> : <ExpandMore />}
-      </ListItem>
+                  <TableCell className={classes.cell}>Total out</TableCell>
+                  <TableCell>{toBTC(transaction.totalOut)}</TableCell>
 
-      <Collapse in={outputOpen} timeout="auto" unmountOnExit>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Address</TableCell>
-              <TableCell>Bitcoin Amount</TableCell>
-              <TableCell>Spent?</TableCell>
-            </TableRow>
-          </TableHead>
+                  <TableCell className={classes.cell}>Out Degree</TableCell>
+                  <TableCell>{transaction.outputs.length}</TableCell>
+                </TableRow>
+            </TableBody>
+          </Table>
 
-          <TableBody>
-            {transactionObj.data.out.map(output => (
-              <TableRow key={output.addr}>
-                <TableCell>{output.addr}</TableCell>
-                <TableCell>{toBTC(output.value)}</TableCell>
-                <TableCell>{output.spent? 'Yes': 'No'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Collapse>
-      </div>
+          {createInputOutputTable(handleInputClick, inputOpen, 'Inputs', transaction.inputs, 'input_key')}
+          {createInputOutputTable(handleOutputClick, outputOpen, 'Outputs',transaction.outputs, 'output_key')}
+        </React.Fragment>
       }
    </React.Fragment>
   )
