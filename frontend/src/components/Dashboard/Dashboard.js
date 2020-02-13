@@ -105,10 +105,10 @@ const useStyles = makeStyles(theme => ({
     height: 160,
   },
   bigHeight: {
-    height: 280,
+    height: 440,
   },
   graph: {
-    height: 500,
+    height: '85vh',
   },
 
 }));

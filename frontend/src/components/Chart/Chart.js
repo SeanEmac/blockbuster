@@ -3,6 +3,12 @@ import { DataSet, Network } from 'vis';
 
 
 const options = {
+  layout: {
+    hierarchical: {
+      direction: "UD",
+      sortMethod: "directed"
+    }
+  },
   physics: {
     barnesHut: {
       springConstant: 0,
@@ -18,54 +24,74 @@ const options = {
   }
 }
 
+const toBTC = (satoshi) => {
+  return satoshi / 100000000 + " BTC" 
+}
+
+const makeNode = (id, label, shape, colour) => {
+  return {
+    id: id,
+    label: label,
+    shape: shape,
+    color: colour
+  }
+}
+
+const getNodes = (transaction) => {
+  let inputs = transaction.inputs
+  let outputs = transaction.outputs
+  let total = toBTC(transaction.totalIn) 
+  let nodes = []
+
+  nodes.push(makeNode(transaction.id, 'Transaction\n' + total, "circle", "#97C2FC"))
+
+  inputs.forEach(input => {
+    nodes.push(makeNode(input.address, 'Input\n' + toBTC(input.satoshis), "circle", "#FB7E81"))
+  })
+  outputs.forEach(output => {
+    nodes.push(makeNode(output.address, 'Input\n' + toBTC(output.satoshis), "circle", "#FB7E81"))
+  })
+
+  return nodes
+}
+
+const getEdges = (transaction) => {
+  let inputs = transaction.inputs
+  let outputs = transaction.outputs
+  let edges = []
+
+  inputs.forEach(input => {
+    edges.push({from: input.address, to: transaction.id})
+  })
+
+  outputs.forEach(output => {
+    edges.push({from: transaction.id, to: output.address})
+  })
+
+  return edges
+}
+
 const Chart = (props)  => {
   let transaction = props.transaction
+  console.log(transaction)
+
   const appRef = createRef();
   let nodes = []
   let edges = []
 
-  let trans = transaction.id;
-  let inputs = transaction.inputs.map(input => input.input_key)
-  let outputs = transaction.outputs.map(output => output.output_key)
+  let root_trans = transaction.id;
+  nodes.push(getNodes(transaction.inputs[0].parent))
+  nodes.push(getNodes(transaction.outputs[0].child))
+  nodes.push(getNodes(transaction.outputs[1].child))
+  nodes = nodes.flat()
 
-  nodes.push({
-    id: trans,
-    label: 'Transaction',//trans,
-    shape: "circle",
-    color: "#97C2FC"
-  })
+  edges.push(getEdges(transaction.inputs[0].parent))
+  edges.push(getEdges(transaction.outputs[0].child))
+  edges.push(getEdges(transaction.outputs[1].child))
+  edges.push(getEdges(transaction))
+  edges = edges.flat()
 
-  inputs.forEach(input => {
-    nodes.push({
-      id: input,
-      label: 'Input',//input,
-      shape: "circle",
-      color: "#FB7E81"
-    })
-  })
-
-  outputs.forEach(output => {
-    nodes.push({
-      id: output,
-      label: 'Output', //output,
-      shape: "circle",
-      color: "#7BE141"
-    })
-  })
-
-  inputs.forEach(input => {
-    edges.push({
-      from: input,
-      to: trans
-    })
-  })
-
-  outputs.forEach(output => {
-    edges.push({
-      from: trans,
-      to: output
-    })
-  })
+  nodes.push(makeNode(root_trans, 'Root Transaction\n' + toBTC(transaction.totalIn), "circle", "#7BE141"))
 
   const data = {
     nodes:  new DataSet(nodes),

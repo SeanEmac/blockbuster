@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const createInputOutputTable = (onClick, open, title, inputs, key) => {
+const createInputOutputTable = (onClick, open, title, inputs) => {
   return <div>
     <ListItem button onClick={onClick}>
       <Title>{title}</Title>
@@ -43,8 +43,8 @@ const createInputOutputTable = (onClick, open, title, inputs, key) => {
 
         <TableBody>
           {inputs.map(input => (
-            <TableRow key={input[key]}>
-              <TableCell>{input[key]}</TableCell>
+            <TableRow key={input.address}>
+              <TableCell>{input.address}</TableCell>
               <TableCell>{toBTC(input.satoshis)}</TableCell>
               <TableCell>Spent</TableCell>
             </TableRow>
@@ -77,6 +77,7 @@ const TransactionSummary = (props)  => {
       res
         .json()
         .then(res => {
+          console.log(res)
           // Set the json response
           setTransaction(res.transaction)
           // Send the data to the Chart component
@@ -130,8 +131,8 @@ const TransactionSummary = (props)  => {
             </TableBody>
           </Table>
 
-          {createInputOutputTable(handleInputClick, inputOpen, 'Inputs', transaction.inputs, 'input_key')}
-          {createInputOutputTable(handleOutputClick, outputOpen, 'Outputs',transaction.outputs, 'output_key')}
+          {createInputOutputTable(handleInputClick, inputOpen, 'Inputs', transaction.inputs)}
+          {createInputOutputTable(handleOutputClick, outputOpen, 'Outputs',transaction.outputs)}
         </React.Fragment>
       }
    </React.Fragment>
