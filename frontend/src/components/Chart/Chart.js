@@ -24,10 +24,14 @@ const options = {
   },
   groups: {
     transaction: {
-      shape: "circle",
+      shape: "box",
       color: "#97C2FC"
     },
     address: {
+      shape: "circle",
+      color: "#32CD32"
+    },
+    fraudAddr: {
       shape: "circle",
       color: "#FB7E81"
     }
@@ -35,15 +39,17 @@ const options = {
 }
 
 const toBTC = (satoshi) => {
-  return satoshi / 100000000 + " BTC" 
+  let sat = Math.round((satoshi / 100000000 + Number.EPSILON) * 100) / 100
+  return sat + " BTC" 
 }
 
-const makeNode = (id, label, group) => {
+const makeNode = (id, label, group, value) => {
   return {
     id: id,
     label: label,
     group: group,
-    title: id
+    title: id,
+    value: value
   }
 }
 
@@ -53,13 +59,17 @@ const getNodes = (transaction) => {
   let total = toBTC(transaction.totalIn) 
   let nodes = []
 
-  nodes.push(makeNode(transaction.id, 'Transaction\n' + total, 'transaction'))
+  nodes.push(makeNode(transaction.id, 'Transaction\n' + total, 'transaction', transaction.totalIn))
 
   inputs.forEach(input => {
-    nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), 'address'))
+    let type = 'address'
+    if(input.fraud) type = 'fraudAddr'
+    nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), type, input.satoshis))
   })
   outputs.forEach(output => {
-    nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), 'address'))
+    let type = 'address'
+    if(output.fraud) type = 'fraudAddr'
+    nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), type, output.satoshis))
   })
 
   return nodes
@@ -119,7 +129,7 @@ const Chart = (props)  => {
   edges.push(getEdges(transaction))
   edges = edges.flat()
 
-  nodes.push(makeNode(root_trans, 'Searched\n' + toBTC(transaction.totalIn), "circle", "#7BE141"))
+  nodes.push(makeNode(root_trans, 'Searched\n' + toBTC(transaction.totalIn), "transaction", transaction.totalIn))
 
   console.log(nodes)
   let combined = combine_nodes(nodes)

@@ -19,6 +19,7 @@ def process_transaction(response):
     input = {}
     input['satoshis'] = inp['prev_out']['value']
     input['spent'] = inp['prev_out']['spent']
+    input['fraud'] = False
     if ('addr' in inp['prev_out']):
       input['address'] = inp['prev_out']['addr']
     else:
@@ -29,6 +30,7 @@ def process_transaction(response):
   for out in response['out']:
     output = {}
     output['spent'] = out['spent']
+    output['fraud'] = False
     output['satoshis'] = out['value']
     if ('addr' in out):
       output['address'] = out['addr']
