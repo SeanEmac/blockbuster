@@ -77,7 +77,6 @@ const TransactionSummary = (props)  => {
       res
         .json()
         .then(res => {
-          console.log(res)
           // Set the json response
           setTransaction(res.transaction)
           // Send the data to the Chart component

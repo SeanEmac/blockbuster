@@ -1,0 +1,22 @@
+{
+  "name": "blockbuster",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "(cd backend && python server.py) & (cd frontend && npm start)",
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SeanEmac/blockbuster.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SeanEmac/blockbuster/issues"
+  },
+  "homepage": "https://github.com/SeanEmac/blockbuster#readme"
+}

@@ -5,21 +5,31 @@ import { DataSet, Network } from 'vis';
 const options = {
   layout: {
     hierarchical: {
-      direction: "UD",
+      direction: "LR",
       sortMethod: "directed"
     }
   },
   physics: {
     barnesHut: {
       springConstant: 0,
-      avoidOverlap: 20
+      avoidOverlap: 10
     }
   },
-  edges:{
+  edges: {
     arrows: {
       to: {
         enabled: true,
       }
+    }
+  },
+  groups: {
+    transaction: {
+      shape: "circle",
+      color: "#97C2FC"
+    },
+    address: {
+      shape: "circle",
+      color: "#FB7E81"
     }
   }
 }
@@ -28,12 +38,12 @@ const toBTC = (satoshi) => {
   return satoshi / 100000000 + " BTC" 
 }
 
-const makeNode = (id, label, shape, colour) => {
+const makeNode = (id, label, group) => {
   return {
     id: id,
     label: label,
-    shape: shape,
-    color: colour
+    group: group,
+    title: id
   }
 }
 
@@ -43,13 +53,13 @@ const getNodes = (transaction) => {
   let total = toBTC(transaction.totalIn) 
   let nodes = []
 
-  nodes.push(makeNode(transaction.id, 'Transaction\n' + total, "circle", "#97C2FC"))
+  nodes.push(makeNode(transaction.id, 'Transaction\n' + total, 'transaction'))
 
   inputs.forEach(input => {
-    nodes.push(makeNode(input.address, 'Input\n' + toBTC(input.satoshis), "circle", "#FB7E81"))
+    nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), 'address'))
   })
   outputs.forEach(output => {
-    nodes.push(makeNode(output.address, 'Input\n' + toBTC(output.satoshis), "circle", "#FB7E81"))
+    nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), 'address'))
   })
 
   return nodes
@@ -71,35 +81,59 @@ const getEdges = (transaction) => {
   return edges
 }
 
+const combine_nodes = (nodes) => {
+  let newNodes = []
+  nodes.forEach(node => {
+    if (check_node_id(newNodes, node.id) == false) {
+      newNodes.push(node)
+    }
+  })
+  return newNodes
+}
+
+const check_node_id = (nodes, id) => {
+  let duplicate = false
+  nodes.forEach(node => {
+    if (node.id == id) {
+      duplicate = true
+    }
+  })
+  return duplicate
+}
+
 const Chart = (props)  => {
+  console.log(props)
   let transaction = props.transaction
-  console.log(transaction)
 
   const appRef = createRef();
   let nodes = []
   let edges = []
 
   let root_trans = transaction.id;
-  nodes.push(getNodes(transaction.inputs[0].parent))
-  nodes.push(getNodes(transaction.outputs[0].child))
-  nodes.push(getNodes(transaction.outputs[1].child))
+  transaction.inputs.forEach(input => nodes.push(getNodes(input.parent)))
+  transaction.outputs.forEach(output => nodes.push(getNodes(output.child)))
   nodes = nodes.flat()
 
-  edges.push(getEdges(transaction.inputs[0].parent))
-  edges.push(getEdges(transaction.outputs[0].child))
-  edges.push(getEdges(transaction.outputs[1].child))
+  transaction.inputs.forEach(input => edges.push(getEdges(input.parent)))
+  transaction.outputs.forEach(output => edges.push(getEdges(output.child)))
   edges.push(getEdges(transaction))
   edges = edges.flat()
 
-  nodes.push(makeNode(root_trans, 'Root Transaction\n' + toBTC(transaction.totalIn), "circle", "#7BE141"))
+  nodes.push(makeNode(root_trans, 'Searched\n' + toBTC(transaction.totalIn), "circle", "#7BE141"))
 
+  console.log(nodes)
+  let combined = combine_nodes(nodes)
   const data = {
-    nodes:  new DataSet(nodes),
+    nodes: new DataSet(combined),
     edges: new DataSet(edges)
   }
 
   useEffect(() => {
-    new Network(appRef.current, data, options);
+    let network = new Network(appRef.current, data, options);
+
+    network.on("click", function(params) {
+    });
+
   }, [props]);
 
   return (
