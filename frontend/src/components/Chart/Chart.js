@@ -74,11 +74,19 @@ export const ChartMethods = () => {
 }
 
 const Chart = (props)  => {
+  let enabled = false
   const options = {
     layout: {
       hierarchical: {
-        direction: "LR",
-        sortMethod: "directed"
+        enabled: enabled,
+        levelSeparation: 100,
+        nodeSpacing: 50,
+        treeSpacing: 100,
+        blockShifting: true,
+        edgeMinimization: true,
+        parentCentralization: true,
+        direction: "LR", // UD, DU, LR, RL
+        sortMethod: "directed", // hubsize
       }
     },
     physics: {
@@ -144,6 +152,16 @@ const Chart = (props)  => {
     let network = new Network(appRef.current, data, options);
 
     network.on("click", function(params) {
+      console.log(params)
+      enabled = !enabled
+      let noptions = { 
+        layout: {
+          hierarchical: {
+            enabled: enabled,
+          }
+        },
+      }
+      network.setOptions(noptions); 
     });
 
   }, [props]);
