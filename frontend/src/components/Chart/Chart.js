@@ -6,7 +6,7 @@ export const ChartMethods = () => {
     let sat = Math.round((satoshi / 100000000 + Number.EPSILON) * 100) / 100
     return sat + " BTC" 
   }
-  
+
   const makeNode = (id, label, group, value) => {
     return {
       id: id,
@@ -16,55 +16,7 @@ export const ChartMethods = () => {
       value: value
     }
   }
-  
-  const getNodes = (transaction) => {
-    let inputs = transaction.inputs
-    let outputs = transaction.outputs
-    let total = toBTC(transaction.totalIn) 
-    let nodes = []
-  
-    nodes.push(makeNode(transaction.id, 'Transaction\n' + total, 'transaction', transaction.totalIn))
-  
-    inputs.forEach(input => {
-      let type = 'address'
-      if(input.fraud) type = 'fraudAddr'
-      nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), type, input.satoshis))
-    })
-    outputs.forEach(output => {
-      let type = 'address'
-      if(output.fraud) type = 'fraudAddr'
-      nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), type, output.satoshis))
-    })
-  
-    return nodes
-  }
-  
-  const getEdges = (transaction) => {
-    let inputs = transaction.inputs
-    let outputs = transaction.outputs
-    let edges = []
-  
-    inputs.forEach(input => {
-      edges.push({from: input.address, to: transaction.id})
-    })
-  
-    outputs.forEach(output => {
-      edges.push({from: transaction.id, to: output.address})
-    })
-  
-    return edges
-  }
-  
-  const combine_nodes = (nodes) => {
-    let newNodes = []
-    nodes.forEach(node => {
-      if (check_node_id(newNodes, node.id) == false) {
-        newNodes.push(node)
-      }
-    })
-    return newNodes
-  }
-  
+
   const check_node_id = (nodes, id) => {
     let duplicate = false
     nodes.forEach(node => {
@@ -75,16 +27,51 @@ export const ChartMethods = () => {
     return duplicate
   }
 
+  const remove_duplicate_nodes = (nodes) => {
+    let newNodes = []
+    nodes.forEach(node => {
+      if (check_node_id(newNodes, node.id) === false) {
+        newNodes.push(node)
+      }
+    })
+    return newNodes
+  }
+
+  const draw_transaction = (transaction) => {
+    let nodes = []
+    let edges = []
+
+    let hash = transaction.hash
+    nodes.push(makeNode(transaction.hash, 'Transaction\n' + toBTC(transaction.totalIn) , 'transaction', transaction.totalIn))
+
+    transaction.inputs.forEach(input => {
+      let type = 'address'
+      if(input.fraud) type = 'fraudAddr'
+
+      nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), type, input.satoshis))
+      edges.push({from: input.address, to: hash})
+    })
+
+    transaction.outputs.forEach(output => {
+      let type = 'address'
+      if(output.fraud) type = 'fraudAddr'
+
+      nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), type, output.satoshis))
+      edges.push({from: hash, to: output.address})
+    })
+
+    // This can be destructured... let [n, e] = draw_transaction()
+    return [nodes, edges]
+  }
+
   return {
     toBTC,
     makeNode,
-    getNodes,
-    getEdges,
-    combine_nodes,
+    remove_duplicate_nodes,
     check_node_id,
+    draw_transaction,
   };
 }
-
 
 const Chart = (props)  => {
   const options = {
@@ -129,21 +116,27 @@ const Chart = (props)  => {
   let nodes = []
   let edges = []
 
-  let root_trans = transaction.id;
-  transaction.inputs.forEach(input => nodes.push(ChartMethods().getNodes(input.parent)))
-  transaction.outputs.forEach(output => nodes.push(ChartMethods().getNodes(output.child)))
-  nodes = nodes.flat()
+  let [n, e] = ChartMethods().draw_transaction(transaction)
+  nodes.push(n)
+  edges.push(e)
 
-  transaction.inputs.forEach(input => edges.push(ChartMethods().getEdges(input.parent)))
-  transaction.outputs.forEach(output => edges.push(ChartMethods().getEdges(output.child)))
-  edges.push(ChartMethods().getEdges(transaction))
+  // just go one step back and forward
+  transaction.inputs.forEach(input => {
+    [n, e] = ChartMethods().draw_transaction(input.transaction)
+    nodes.push(n)
+    edges.push(e)
+  })
+  transaction.outputs.forEach(output => {
+    [n, e] = ChartMethods().draw_transaction(output.transaction)
+    nodes.push(n)
+    edges.push(e)
+  })
+  nodes = nodes.flat()
   edges = edges.flat()
 
-  nodes.push(ChartMethods().makeNode(root_trans, 'Searched\n' + ChartMethods().toBTC(transaction.totalIn), "transaction", transaction.totalIn))
-
-  let combined = ChartMethods().combine_nodes(nodes)
+  nodes = ChartMethods().remove_duplicate_nodes(nodes)
   const data = {
-    nodes: new DataSet(combined),
+    nodes: new DataSet(nodes),
     edges: new DataSet(edges)
   }
 
@@ -159,5 +152,6 @@ const Chart = (props)  => {
     <div ref={appRef} />
   );
 }
+
 
 export default Chart;
