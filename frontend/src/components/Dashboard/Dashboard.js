@@ -21,8 +21,8 @@ const useStyles = makeStyles(theme => ({
     overflow: 'auto',
   },
   container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
   paper: {
     padding: theme.spacing(2),
@@ -37,13 +37,15 @@ const useStyles = makeStyles(theme => ({
     height: 440,
   },
   graph: {
-    height: '85vh',
+    padding: 0,
+    height: '90vh',
   },
 
 }));
 
 export default function Dashboard() {
   const classes = useStyles();
+  console.log(classes)
   const [transactionID, setTransactionID] = React.useState('');
   const [transactionData, setTransactionData] = React.useState('');
   const [loaded, setLoaded] = React.useState(false);
@@ -68,24 +70,24 @@ export default function Dashboard() {
     <main className={classes.content}>
       <div className={classes.appBarSpacer} />
       <Container maxWidth="lg" className={classes.container}>
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
 
           {/* Input */}
-          <Grid item xs={12} md={4} lg={7}>
+          <Grid item xs={12} md={7} lg={7}>
             <Paper className={fixedHeightPaper}>
               <Input getTransactionID={getTransactionID} />
             </Paper>
           </Grid>
 
           {/* Examples */}
-          <Grid item xs={12} md={4} lg={5}>
+          <Grid item xs={12} md={5} lg={5}>
             <Paper className={fixedHeightPaper}>
               <Examples getTransactionID={getTransactionID}/>
             </Paper>
           </Grid>
 
           { loaded && // Info
-            <Grid item xs={12} md={8} lg={12}>
+            <Grid item xs={12} md={12} lg={12}>
               <Paper className={bigHeightPaper}>
                 <TransactionSummary transactionID={transactionID} propegateGraphData={propegateGraphData} />
               </Paper>
@@ -93,7 +95,7 @@ export default function Dashboard() {
           }
 
           { graphLoaded && // Chart
-            <Grid item xs={12} md={8} lg={12}>
+            <Grid item xs={12} md={12} lg={12}>
               <Paper className={graph}>
                 <Chart transaction={transactionData.transaction}/>
               </Paper>

@@ -1,4 +1,5 @@
 import React, { useEffect, createRef }from 'react';
+import ReactDOMServer from "react-dom/server";
 import { DataSet, Network } from 'vis';
 
 export const ChartMethods = () => {
@@ -7,20 +8,36 @@ export const ChartMethods = () => {
     return sat + " BTC" 
   }
 
-  const makeNode = (id, label, group, value) => {
+  const makeNode = (id, label, group, value, timestamp, color) => {
     return {
       id: id,
       label: label,
       group: group,
-      title: id,
-      value: value
+      title: makeTooltip(id, group, timestamp, value),
+      value: value,
+      color: color
     }
+  }
+
+  const makeTooltip = (id, group, timestamp, value) => {
+    // Was returning a react element which vis couldnt render
+    return (ReactDOMServer.renderToString(
+      <div>
+        <b>ID: </b>{id}
+        <br></br>
+        <b>Type: </b>{group}
+        <br></br>
+        <b>Amount: </b>{toBTC(value)}
+        <br></br>
+        <b>Date: </b>{timestamp}
+      </div>
+    ))
   }
 
   const check_node_id = (nodes, id) => {
     let duplicate = false
     nodes.forEach(node => {
-      if (node.id == id) {
+      if (node.id === id) {
         duplicate = true
       }
     })
@@ -40,23 +57,28 @@ export const ChartMethods = () => {
   const draw_transaction = (transaction) => {
     let nodes = []
     let edges = []
-
+    let green = '#32CD32' // green
+    let red = '#FB7E81'
+    let blue = '#4da6ff'
+    let transactionColor = transaction.fraud ? red : blue
+    
     let hash = transaction.hash
-    nodes.push(makeNode(transaction.hash, 'Transaction\n' + toBTC(transaction.totalIn) , 'transaction', transaction.totalIn))
+    nodes.push(makeNode(transaction.hash, 'Transaction\n' + toBTC(transaction.totalIn) ,
+     'Transaction', transaction.totalIn, transaction.timestamp, transactionColor))
 
     transaction.inputs.forEach(input => {
-      let type = 'address'
-      if(input.fraud) type = 'fraudAddr'
+      let type = 'Address'
 
-      nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), type, input.satoshis))
+      nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), type,
+       input.satoshis, "N/A", green))
       edges.push({from: input.address, to: hash})
     })
 
     transaction.outputs.forEach(output => {
-      let type = 'address'
-      if(output.fraud) type = 'fraudAddr'
+      let type = 'Address'
 
-      nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), type, output.satoshis))
+      nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), type,
+       output.satoshis, "N/A", green))
       edges.push({from: hash, to: output.address})
     })
 
@@ -74,11 +96,12 @@ export const ChartMethods = () => {
 }
 
 const Chart = (props)  => {
-  let enabled = false
+  let option = 0
+
   const options = {
     layout: {
       hierarchical: {
-        enabled: enabled,
+        enabled: true,
         levelSeparation: 100,
         nodeSpacing: 50,
         treeSpacing: 100,
@@ -103,17 +126,11 @@ const Chart = (props)  => {
       }
     },
     groups: {
-      transaction: {
+      Transaction: {
         shape: "box",
-        color: "#97C2FC"
       },
-      address: {
+      Address: {
         shape: "circle",
-        color: "#32CD32"
-      },
-      fraudAddr: {
-        shape: "circle",
-        color: "#FB7E81"
       }
     }
   }
@@ -135,14 +152,22 @@ const Chart = (props)  => {
     edges.push(e)
   })
   transaction.outputs.forEach(output => {
-    [n, e] = ChartMethods().draw_transaction(output.transaction)
-    nodes.push(n)
-    edges.push(e)
+    if(output.spent){
+      [n, e] = ChartMethods().draw_transaction(output.transaction)
+      nodes.push(n)
+      edges.push(e)
+    }
   })
   nodes = nodes.flat()
   edges = edges.flat()
 
   nodes = ChartMethods().remove_duplicate_nodes(nodes)
+
+  delete nodes[0].group
+  nodes[0].color = transaction.fraud ? '#FB7E81' : '#FFDF00'
+  nodes[0].shape = 'box'
+  nodes[0].size = 200
+
   const data = {
     nodes: new DataSet(nodes),
     edges: new DataSet(edges)
@@ -152,16 +177,20 @@ const Chart = (props)  => {
     let network = new Network(appRef.current, data, options);
 
     network.on("click", function(params) {
-      console.log(params)
-      enabled = !enabled
-      let noptions = { 
+      let options = [
+        {enabled: true, direction: "UD"},
+        {enabled: false},
+        {enabled: true, direction: "LR"}
+      ]
+
+      let newOptions = { 
         layout: {
-          hierarchical: {
-            enabled: enabled,
-          }
+          hierarchical: options[option % 3]
         },
       }
-      network.setOptions(noptions); 
+
+      network.setOptions(newOptions);
+      option++;
     });
 
   }, [props]);

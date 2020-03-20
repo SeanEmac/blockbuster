@@ -18,7 +18,6 @@ import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -44,13 +43,6 @@ const useStyles = makeStyles(theme => ({
   },
   toolbar: {
     paddingRight: 24,
-  },
-  toolbarIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: '0 8px',
-    ...theme.mixins.toolbar,
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -115,7 +107,7 @@ const App = () => {
     <div className={classes.root}>
       <CssBaseline />
       <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
-        <Toolbar className={classes.toolbar}>
+        <Toolbar variant="dense" className={classes.toolbar}>
 
           <IconButton
             edge="start"
@@ -139,29 +131,27 @@ const App = () => {
           variant="permanent"
           classes={{paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose), }} open={open}
         >
-          <div className={classes.toolbarIcon}>
+          <div>
             <IconButton onClick={handleDrawerClose}>
               <ChevronLeftIcon />
             </IconButton>
           </div>
-
-          <Divider />
           <ListItem button component={Link} to='/'>
-            <ListItemIcon>
-              <BubbleChartIcon />
-            </ListItemIcon>
-            <ListItemText primary="Dashboard" />
-          </ListItem>
-          <ListItem button component={Link} to='/elliptic'>
             <ListItemIcon>
               <TimelineIcon />
             </ListItemIcon>
             <ListItemText primary="Elliptic" />
           </ListItem>
+          <ListItem button component={Link} to='/graph'>
+            <ListItemIcon>
+              <BubbleChartIcon />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItem>
         </Drawer>
 
-        <Route exact path="/" component={Dashboard} />
-        <Route path="/elliptic" component={Elliptic} />
+        <Route exact path="/" component={Elliptic} />
+        <Route path="/graph" component={Dashboard} />
       </Router>
     </div>
   )

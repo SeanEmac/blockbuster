@@ -27,6 +27,16 @@ export default function Examples(props) {
         {button('10,000 BTC Pizza', 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d')}
       </ButtonGroup>
 
+      <ButtonGroup
+        orientation="horizontal"
+        color="primary"
+        aria-label="vertical outlined primary button group"
+      > 
+        {button('Fraud', '4e645394a176febb7474f7b40cf5610b3c48767e52e31a46768df8a388ff7805')}
+        {button('Not fraud', '15aafbeb4f3293d9b637945132fd9121438e48f2d9409bada5e22566f9a5df97')}
+        {button('Unknown', 'c2abab83dd2bbd19ac3bda8f81c324e429d01c5428e7d9e43e7b91492dcf751f')}
+      </ButtonGroup>
+
     </React.Fragment>
   );
 }

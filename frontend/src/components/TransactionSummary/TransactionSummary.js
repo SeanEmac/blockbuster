@@ -13,7 +13,7 @@ import TableRow from '@material-ui/core/TableRow';
 
 const useStyles = makeStyles(theme => ({
   table: {
-    maxWidth: 650,
+    maxWidth: '100%',
   },
   cell : {
     borderTopWidth: 0,
@@ -27,6 +27,7 @@ const useStyles = makeStyles(theme => ({
 let dummy = {
   "transaction": {
     "fees": 0,
+    "block_height": "154598",
     "hash": "b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da",
     "inputs": [
       {
@@ -436,19 +437,19 @@ const TransactionSummary = (props)  => {
     if (trans !== "") {
       // https://blockchain.info/rawtx/b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da
       // const res = await fetch('https://blockchain.info/rawtx/' + trans + '?&cors=true')
-      // const res = await fetch('http://127.0.0.1:5000/blockbuster/api/transaction/' + trans)
-      setTransaction(dummy.transaction)
-      // Send the data to the Chart component
-      props.propegateGraphData(dummy)
-      // res
-      //   .json()
-      //   .then(res => {
-      //     console.log(res)
-      //     // Set the json response
-      //     setTransaction(res.transaction)
-      //     // Send the data to the Chart component
-      //     props.propegateGraphData(res)
-      //   })
+      const res = await fetch('http://127.0.0.1:8000/blockbuster/api/transaction/' + trans)
+      // setTransaction(dummy.transaction)
+      // // Send the data to the Chart component
+      // props.propegateGraphData(dummy)
+      res
+        .json()
+        .then(res => {
+          console.log(res)
+          // Set the json response
+          setTransaction(res.transaction)
+          // Send the data to the Chart component
+          props.propegateGraphData(res)
+        })
     }
   }
 
@@ -460,6 +461,26 @@ const TransactionSummary = (props)  => {
     setOutputOpen(!outputOpen);
   };
 
+  const getAvgDegree = (transaction, type) => {
+    let sum = 0
+    let counter = 1;
+
+    sum += transaction[type].length
+
+    transaction.inputs.forEach(inp => {
+      counter++;
+      sum += inp.transaction[type].length
+    });
+
+    transaction.outputs.forEach(out => {
+      counter++
+      if(out.spent) sum += out.transaction[type].length
+    });
+
+    let avg = sum / counter
+    return avg
+  }
+
   return (
     <React.Fragment>
       <Title > Transaction details: </Title>
@@ -470,35 +491,45 @@ const TransactionSummary = (props)  => {
           <Table className={classes.table} size="small">
             <TableBody>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>Hash</TableCell>
                   <TableCell colSpan={5}>{transaction.hash}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Time</TableCell>
-                  <TableCell>{new Date(transaction.timestamp).toLocaleString()}</TableCell>
 
-                  <TableCell className={classes.cell}>Total in</TableCell>
+                  <TableCell className={classes.cell}>Date</TableCell>
+                  <TableCell>{new Date(transaction.timestamp).toLocaleString()}</TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>Block Height</TableCell>
+                  <TableCell>{transaction.block_height}</TableCell>
+
+                  <TableCell className={classes.cell}>Total BTC in</TableCell>
                   <TableCell>{toBTC(transaction.totalIn)}</TableCell>
 
                   <TableCell className={classes.cell}>In Degree</TableCell>
                   <TableCell>{transaction.inputs.length}</TableCell>
+
+                  <TableCell className={classes.cell}>Avg In Degree</TableCell>
+                  <TableCell>{getAvgDegree(transaction, 'inputs')}</TableCell>
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell>Fees</TableCell>
+                  <TableCell>Fee</TableCell>
                   <TableCell>{toBTC(transaction.fees)}</TableCell>
 
-                  <TableCell className={classes.cell}>Total out</TableCell>
+                  <TableCell className={classes.cell}>Total BTC out</TableCell>
                   <TableCell>{toBTC(transaction.totalOut)}</TableCell>
 
                   <TableCell className={classes.cell}>Out Degree</TableCell>
                   <TableCell>{transaction.outputs.length}</TableCell>
+
+                  <TableCell className={classes.cell}>Avg Out Degree</TableCell>
+                  <TableCell>{getAvgDegree(transaction, 'outputs')}</TableCell>
                 </TableRow>
             </TableBody>
           </Table>
 
           {createInputOutputTable(handleInputClick, inputOpen, 'Inputs', transaction.inputs)}
-          {createInputOutputTable(handleOutputClick, outputOpen, 'Outputs',transaction.outputs)}
+          {createInputOutputTable(handleOutputClick, outputOpen, 'Outputs', transaction.outputs)}
         </React.Fragment>
       }
    </React.Fragment>
