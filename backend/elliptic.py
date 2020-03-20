@@ -10,14 +10,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
 
-def make_predictions(unlabeled, classifier):
+def make_predictions(unlabelled, classifier):
   # drop the id and class
-  unlabeled_ids = unlabeled['id']
-  unlabeled = unlabeled.drop('id', axis=1)
-  unlabeled = unlabeled.drop('class', axis=1)
+  unlabelled_ids = unlabelled['id']
+  unlabelled = unlabelled.drop('id', axis=1)
+  unlabelled = unlabelled.drop('class', axis=1)
   
   # use the classifier to make new predictions
-  predictions = classifier.predict(unlabeled)
+  predictions = classifier.predict(unlabelled)
 
   # 1 confirmed fraud
   # 2 confirmed not fraud
@@ -31,9 +31,9 @@ def make_predictions(unlabeled, classifier):
       convertedPreds.append("4")
 
   # Print the results to a new CSV
-  results=pd.DataFrame(data={"id":unlabeled_ids,"class":convertedPreds})
-  results.to_csv(path_or_buf="data/unlabeled_predictions.csv",index=False,sep=',')
-  print('Predictions have been made agains unlabeled data')
+  results=pd.DataFrame(data={"id":unlabelled_ids,"class":convertedPreds})
+  results.to_csv(path_or_buf="data/unlabelled_predictions.csv",index=False,sep=',')
+  print('Predictions have been made agains unlabelled data')
 
 
 def combine_results():
@@ -41,10 +41,10 @@ def combine_results():
   labeled = classes[classes['class'] != 'unknown']
   labeled = labeled.rename(columns={"txId": "id"})
 
-  unlabeled = pd.read_csv('data/unlabeled_predictions.csv', sep=',')
+  unlabelled = pd.read_csv('data/unlabelled_predictions.csv', sep=',')
 
   combined = pd.DataFrame(data={"id":labeled['id'],"class":labeled['class']})
-  combined = combined.append(unlabeled, ignore_index = True)
+  combined = combined.append(unlabelled, ignore_index = True)
 
   combined.to_csv(path_or_buf="data/combined_predictions.csv",index=False,sep=',')
   print('Predictions and known transactions have been combined')
@@ -99,17 +99,16 @@ def classify_unknown():
   y_pred = classifier.predict(X_test)
 
   print('Finsihed training on the labeled data')
-  print('Accuracy: ')
-  print(accuracy_score(y_test, y_pred))
+  print('Accuracy: ' + str(accuracy_score(y_test, y_pred)))
   print('Confusion matrix: ')
   print(confusion_matrix(y_test,y_pred))
   print()
 
-  # Now predict on the unlabeled data
-  unlabeled = features[features['class'] == 'unknown']
-  make_predictions(unlabeled, classifier)
+  # Now predict on the unlabelled data
+  unlabelled = features[features['class'] == 'unknown']
+  make_predictions(unlabelled, classifier)
 
-  # We have the unlabeled and labeled data separated and predicted
+  # We have the unlabelled and labeled data separated and predicted
   # Now we can join them back togehter.
   combine_results()
 
@@ -123,7 +122,7 @@ def plot_counts(df, labels, colors, title, y_lab):
 
 def visualise():
   classes = pd.read_csv('data/elliptic_txs_classes.csv', sep=',')
-  plot_counts(classes, ('Unknown', 'Licit', 'Illicit'), ('cgr'),
+  plot_counts(classes, ('Unknown', 'Licit', 'Illicit'), ('cyan', 'green', 'red'),
     'Original Elliptic class counts', 'Count')
 
   combined_classes = pd.read_csv('data/combined_predictions.csv', sep=',')
@@ -141,6 +140,7 @@ def visualise():
   ax.legend(('Confirmed Licit', 'Predicted Licit'))
 
   plt.show()
+
 
 if __name__ == "__main__":
   classify_unknown()
