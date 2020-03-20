@@ -15,7 +15,9 @@ export const ChartMethods = () => {
       group: group,
       title: makeTooltip(id, group, timestamp, value),
       value: value,
-      color: color
+      color: {
+        background: color,
+      }
     }
   }
 
@@ -57,28 +59,45 @@ export const ChartMethods = () => {
   const draw_transaction = (transaction) => {
     let nodes = []
     let edges = []
-    let green = '#32CD32' // green
-    let red = '#FB7E81'
-    let blue = '#4da6ff'
-    let transactionColor = transaction.fraud ? red : blue
+    let blue = '#4da6ff' // All addresses are blue
+
+    let grey = '#808080' // Grey if it it not known
+    let darkRed = '#e80000' // Dark red for confirmed Fraud
+    let lightRed = '#ff7373' // Light red for predicted Fraud
+    let darkGreen = '#0bb50b' // Dark Green for known licit
+    let lightGreen = '#77c777' // Light green for predicted ilicit
+
+    let transactionColor;
+    switch(transaction.fraud) {
+      case 1:
+        transactionColor = darkRed
+        break;
+      case 2:
+        transactionColor = darkGreen
+        break;
+      case 3:
+        transactionColor = lightRed
+        break;
+      case 4:
+        transactionColor = lightGreen
+        break;
+      default:
+        transactionColor = grey
+    }
     
     let hash = transaction.hash
     nodes.push(makeNode(transaction.hash, 'Transaction\n' + toBTC(transaction.totalIn) ,
      'Transaction', transaction.totalIn, transaction.timestamp, transactionColor))
 
     transaction.inputs.forEach(input => {
-      let type = 'Address'
-
-      nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), type,
-       input.satoshis, "N/A", green))
+      nodes.push(makeNode(input.address, 'Address\n' + toBTC(input.satoshis), 'Address',
+       input.satoshis, "N/A", blue))
       edges.push({from: input.address, to: hash})
     })
 
     transaction.outputs.forEach(output => {
-      let type = 'Address'
-
-      nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), type,
-       output.satoshis, "N/A", green))
+      nodes.push(makeNode(output.address, 'Address\n' + toBTC(output.satoshis), 'Address',
+       output.satoshis, "N/A", blue))
       edges.push({from: hash, to: output.address})
     })
 
@@ -164,10 +183,15 @@ const Chart = (props)  => {
   nodes = ChartMethods().remove_duplicate_nodes(nodes)
 
   delete nodes[0].group
-  nodes[0].color = transaction.fraud ? '#FB7E81' : '#FFDF00'
+  let background = nodes[0].color.background
+  nodes[0].color = {
+    background: background,
+    border: "#FFDF00",
+  }
   nodes[0].shape = 'box'
   nodes[0].size = 200
 
+  console.log(nodes)
   const data = {
     nodes: new DataSet(nodes),
     edges: new DataSet(edges)

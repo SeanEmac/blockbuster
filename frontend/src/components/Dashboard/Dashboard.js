@@ -9,10 +9,7 @@ import TransactionSummary from '../TransactionSummary/TransactionSummary';
 import Input from '../Input/Input';
 import Examples from '../Examples/Examples';
 
-/*
-  https://material-ui.com/styles/basics/
-  Hook API for styling
-*/
+
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
   content: {

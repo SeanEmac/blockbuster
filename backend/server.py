@@ -30,7 +30,6 @@ def get_transaction(transaction_id):
     input['hash'] = inp['prev_hash']
     input['satoshis'] = inp['output_value']
     input['spent'] = True
-    input['fraud'] = False
     t['inputs'].append(input)
 
   for out in response['outputs']:
@@ -39,7 +38,6 @@ def get_transaction(transaction_id):
     output['hash'] = -1
     output['satoshis'] = out['value']
     output['spent'] = False
-    output['fraud'] = False
 
     if ('spent_by' in out):
       output['spent'] = True
@@ -67,13 +65,16 @@ def expand_transaction(transaction):
 
 def search_elliptic(transaction_id):
   de_anon = csv.reader(open('data/elliptic_txs_de-anon.csv', "rt"), delimiter=",")
-  classes = csv.reader(open('data/elliptic_txs_classes.csv', "rt"), delimiter=",")
+  classes = csv.reader(open('data/combined_predictions.csv', "rt"), delimiter=",")
 
   found = False
   identifier = 0
   fraud = '0' 
-  # '0' - not in dataset   '1' - known fraud
-  # 'unknown' - dont know  '2' - know not fraud
+  # '0' - not in dataset
+  # '1' - known fraud
+  # '2' - know not fraud
+  # '3' - predicted fraud
+  # '4' - predicted not fraud
 
   for row in de_anon:
     # See if it is in the data set
@@ -87,17 +88,24 @@ def search_elliptic(transaction_id):
       if identifier == row[0]:
         fraud = row[1]
 
-  if fraud == '1':
-    return True
-  else:
-    return False
+  return int(fraud)
 
 @app.route('/blockbuster/api/transaction/<transaction_id>')
 def get_network(transaction_id):
-  # root = get_transaction(transaction_id)
-  # root = expand_transaction(root)
-  
-  return  jsonify({'transaction': dummy})
+  root = get_transaction(transaction_id)
+  root = expand_transaction(root)
+  # zero = 'b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da'
+  # one = '4e645394a176febb7474f7b40cf5610b3c48767e52e31a46768df8a388ff7805'
+  # two = '39da0d8a7c9bda8f253288181f9691e4594f8add9964f73592c63b0c241e0460'
+  # three = 'b779b9f491ca4ead9b26b8f0aaf7b65589fcd548c447586d49ad0e5df6a7dcf3'
+  # four = 'e0a1822b4fa1dec069f42da6a6c963c814320ffc723de684e05259cc4f880245'
+  # print(search_elliptic(zero))
+  # print(search_elliptic(one))
+  # print(search_elliptic(two))
+  # print(search_elliptic(three))
+  # print(search_elliptic(four))
+
+  return  jsonify({'transaction': root})
 
 
 if __name__ == "__main__":

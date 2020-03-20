@@ -1,7 +1,7 @@
 import React from 'react';
-import Title from '../Title/Title';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
+import Typography from '@material-ui/core/Typography';
 
 
 export default function Examples(props) {
@@ -15,7 +15,9 @@ export default function Examples(props) {
 
   return (
     <React.Fragment>
-      <Title>Example Transactions</Title>
+      <Typography component="h2" variant="h6" color="primary" gutterBottom>
+        Example Transactions
+      </Typography>
 
       <ButtonGroup
         orientation="horizontal"

@@ -32,7 +32,6 @@ const useStyles = makeStyles(theme => ({
 
 export default function Elliptic() {
   const classes = useStyles()
-
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
   return (

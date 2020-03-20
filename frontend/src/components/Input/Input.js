@@ -1,13 +1,14 @@
 import React from "react";
 import TextField from '@material-ui/core/TextField';
-import Title from '../Title/Title';
+import Typography from '@material-ui/core/Typography';
 
 const Input = (props)  => {
   return (
     <React.Fragment>
-     <Title>Search for a transaction:</Title>
-     
-     <form onSubmit={e => props.getTransactionID(e, e.target.transactionID.value)}>
+      <Typography component="h2" variant="h6" color="primary" gutterBottom>
+        Search for a transaction:
+      </Typography>
+      <form onSubmit={e => props.getTransactionID(e, e.target.transactionID.value)}>
         <TextField
           id = "filled-full-width"
           label = "Transaction ID"
@@ -18,12 +19,11 @@ const Input = (props)  => {
           fullWidth
           margin = "normal"
           InputLabelProps = {{
-           shrink: true,
+            hrink: true,
           }}
         />
-     </form>
-     
-   </React.Fragment>
+      </form>
+    </React.Fragment>
   )
 }
 
