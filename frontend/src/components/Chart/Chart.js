@@ -191,7 +191,6 @@ const Chart = (props)  => {
   nodes[0].shape = 'box'
   nodes[0].size = 200
 
-  console.log(nodes)
   const data = {
     nodes: new DataSet(nodes),
     edges: new DataSet(edges)

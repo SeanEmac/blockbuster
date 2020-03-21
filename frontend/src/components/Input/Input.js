@@ -19,7 +19,7 @@ const Input = (props)  => {
           fullWidth
           margin = "normal"
           InputLabelProps = {{
-            hrink: true,
+            hrink: "true",
           }}
         />
       </form>
