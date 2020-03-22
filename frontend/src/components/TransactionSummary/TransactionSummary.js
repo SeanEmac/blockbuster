@@ -445,18 +445,18 @@ const TransactionSummary = (props)  => {
 
   async function fetchData(trans) {
     if (trans !== "") {
-      const res = await fetch('http://127.0.0.1:8000/blockbuster/api/transaction/' + trans)
-      // setTransaction(dummy.transaction)
-      // props.propegateGraphData(dummy)
-      res
-        .json()
-        .then(res => {
-          console.log(res)
-          // Set the json response
-          setTransaction(res.transaction)
-          // Send the data to the Chart component
-          props.propegateGraphData(res)
-      })
+      // const res = await fetch('http://127.0.0.1:8000/blockbuster/api/transaction/' + trans)
+      setTransaction(dummy.transaction)
+      props.propegateGraphData(dummy)
+      // res
+      //   .json()
+      //   .then(res => {
+      //     console.log(res)
+      //     // Set the json response
+      //     setTransaction(res.transaction)
+      //     // Send the data to the Chart component
+      //     props.propegateGraphData(res)
+      // })
     }
   }
 
