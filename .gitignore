@@ -1,14 +1,12 @@
 # Dump folder for misc files
 /scrap
+.vscode
 
 # Frontend 
 frontend/node_modules
 
 # Backend
-backend/data
 backend/data/elliptic_txs_classes.csv
 backend/data/elliptic_txs_edgelist.csv
 backend/data/elliptic_txs_features.csv
 backend/data/unlabelled_predictions.csv
-backend/data/elliptic_txs_de-anon.csv
-backend/data/combined_predictions.csv

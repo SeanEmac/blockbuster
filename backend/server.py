@@ -95,7 +95,7 @@ def search_elliptic(transaction_id):
   return int(fraud)
 
 
-@app.route('/blockbuster/api/transaction/<transaction_id>')
+@app.route('/api/transaction/<transaction_id>')
 def get_network(transaction_id):
   files = os.listdir("transactions")
   # Remove .json from the file names

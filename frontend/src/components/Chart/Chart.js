@@ -4,7 +4,7 @@ import { DataSet, Network } from 'vis';
 
 export const ChartMethods = () => {
   const toBTC = (satoshi) => {
-    let sat = Math.round((satoshi / 100000000 + Number.EPSILON) * 100) / 100
+    let sat = Math.round((satoshi / 100000000 + Number.EPSILON) * 1000) / 1000
     return sat + " BTC" 
   }
 

@@ -16,7 +16,7 @@ export default function Examples(props) {
   return (
     <React.Fragment>
       <Typography component="h2" variant="h6" color="primary" gutterBottom>
-        Example Transactions
+        Example Transactions:
       </Typography>
 
       <ButtonGroup
@@ -24,9 +24,19 @@ export default function Examples(props) {
         color="primary"
         aria-label="vertical outlined primary button group"
       > 
-        {button('Default', 'b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da')}
-        {button('Hitman', '4a0a5b6036c0da84c3eb9c2a884b6ad72416d1758470e19fb1d2fa2a145b5601')}
+        {button('Hitman hired', '4a0a5b6036c0da84c3eb9c2a884b6ad72416d1758470e19fb1d2fa2a145b5601')}
         {button('10,000 BTC Pizza', 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d')}
+      </ButtonGroup>
+      
+
+      <ButtonGroup
+        orientation="horizontal"
+        color="primary"
+        aria-label="vertical outlined primary button group"
+      > 
+        {button('Unknown', 'e0c52443da06f55e768aa603eddbbcc0a42e3bbd0fd991e3b2902e0b3f5d59a8')}
+        {button('Fraudulent', '98760ff05190565c623cc3dd98d1283412ec95ca68f6c05d5f0ef9f4c665b367')}
+        {button('Licit', '2016e81461ce3ebad56af480bbda9da7157745aed63a870cc110e3bd143fa7d7')}
       </ButtonGroup>
 
       <ButtonGroup
@@ -34,9 +44,8 @@ export default function Examples(props) {
         color="primary"
         aria-label="vertical outlined primary button group"
       > 
-        {button('Fraud', '4e645394a176febb7474f7b40cf5610b3c48767e52e31a46768df8a388ff7805')}
-        {button('Not fraud', '15aafbeb4f3293d9b637945132fd9121438e48f2d9409bada5e22566f9a5df97')}
-        {button('Unknown', 'c2abab83dd2bbd19ac3bda8f81c324e429d01c5428e7d9e43e7b91492dcf751f')}
+        {button('Classified Fraud', '6a3223dae297cf80ae60d22f916a542f83fb9e60143dc09694a5412cab68b1b4')}
+        {button('Classified Licit', '2c4c2a2eb5de89837ffb2e023e3a3d7ba3c0d7901c6594b23e6cbc6936aea1cb')}
       </ButtonGroup>
 
     </React.Fragment>
